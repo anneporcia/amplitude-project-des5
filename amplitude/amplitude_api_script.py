@@ -109,12 +109,12 @@ def unzip():
                 # Process each .gz file
                 print(file)
 
-    gz_path = os.path.join(root, file)
-    json_filename = file[:-3]  
-    output_path = os.path.join(data_dir, json_filename)
+            gz_path = os.path.join(root, file)
+            json_filename = file[:-3]  
+            output_path = os.path.join(data_dir, json_filename)
 
-    with gzip.open(gz_path, 'rb') as gz_file, open(output_path, 'wb') as out_file:
-        shutil.copyfileobj(gz_file, out_file)
+            with gzip.open(gz_path, 'rb') as gz_file, open(output_path, 'wb') as out_file:
+                shutil.copyfileobj(gz_file, out_file)
 
     shutil.rmtree(temp_dir)
 
