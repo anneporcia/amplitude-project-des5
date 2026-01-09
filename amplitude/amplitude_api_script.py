@@ -37,8 +37,8 @@ while count < number_of_tries:
         filepath = f'{dir}/{filename}.zip'
 
         try:
-            with ZipFile(filepath, 'w') as file:
-                file.write(filepath)
+            with open(filepath, 'wb') as f:
+                f.write(response.content)
 
             print(f'Download successful at {filename} (❁´◡`❁)')
         except Exception as e:
