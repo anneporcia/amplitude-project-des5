@@ -1,61 +1,69 @@
-# Amplitude Extract Script
+# Amplitude Project
 
-Python designed to automate the retrieval of raw event data from the **Amplitude Export API**. This script handles authentication, manages local directory structures, and includes a retry mechanism for resilient data fetching.
+## **Extract Script**
 
----
-
-## 🚀 Features
-
-* **Automated Exports**: Downloads raw event data for a specified date range.
-* **Environment Security**: Integration with `python-dotenv` to keep API credentials out of your source code.
-* **Automated Directory Management**: Checks for and creates a `/data` directory if it doesn't exist.
-* **Retry Logic**: Includes a loop to handle transient server errors (5xx) automatically.
-* **Timestamped Files**: Saves exports as `.zip` files named by the exact download time for easy versioning.
+* **Automated Date Handling**: Automatically targets data from 3 days ago—no manual date entry required.
+* **Professional Logging**: Creates a `/logs` directory and tracks every step (successes, status codes, and errors) with timestamps.
+* **Deep Extraction**: Unpacks the primary Amplitude `.zip` and automatically decompresses nested `.gz` files into clean, readable JSON.
+* **Temporary Workspace**: Uses system temporary directories for extraction to keep your project folder clutter-free.
 
 ---
 
 ## 🛠 Setup and Usage
 
-To get this script running, follow these steps in order:
+Follow these steps to get the extraction pipeline running:
 
-1. **Install Dependencies**:
-   Open your terminal and run:
-   pip install requests python-dotenv
+### 1. Installation and Requirements
+Ensure you have Python 3.x installed. This script uses the `requests` and `python-dotenv` libraries.
+pip install requests python-dotenv
 
+### 2. Configure Credentials
 
-2. **Configure Environment Variables**:
-  Create a file named `.env` in the same folder as your script and add your Amplitude API credentials:
-  AMP_API_KEY=your_amplitude_api_key
-  AMP_SECRET_KEY=your_amplitude_secret_key
+Create a `.env` file in the root directory to store your keys safely:
 
+AMP_API_KEY=your_amplitude_api_key
+AMP_SECRET_KEY=your_amplitude_secret_key
 
-3. **Set Your Date Range**:
-Inside the script, modify the `dates` dictionary to match the time period you want to export (Format: `YYYYMMDDTHH`):
-dates = {
-    'start': '20260101T00',
-    'end': '20260108T00'
-}
+### 3. Usage & Execution
 
+Simply run the script. It will automatically calculate the date, ping the Amplitude EU server, and process the files:
 
-4. **Verify Imports**:
-Ensure your script includes `import time` at the top to support the retry delay functionality.
-
-
-6. **Execute the Script**:
-Run the following command in your terminal:
 python your_script_name.py
 
+---
 
 ## 📂 Project Structure
 
-After a successful run, your project folder will look like this:
- .env                # Your private API keys (do not share!)
- your_script.py      # The export script
- data/               # Created automatically by the script
+The script manages three distinct folders to organize your data lifecycle:
+- **.env**                # Your private API keys
+- **script.py**           # The main extraction logic
+- **logs/**               # Log files (e.g., amplitude_extract_20260109.log)
+- **data/**               # The raw .zip files downloaded from the API
+- **json_data/**          # Final processed JSON files ready for analysis
+
+
+---
+
+## ⚙️ Technical Workflow
+
+1. **Logging Init**: Creates a `/logs` folder and starts a new log file for the session.
+2. **API Call**: Connects to `analytics.eu.amplitude.com` using Basic Auth.
+3. **Download**: Saves the raw payload into the `/data` folder with a timestamped filename.
+4. **Decompression**:
+   * Unzips the main archive to a temporary folder.
+   * Identifies the internal folder structure.
+   * Walks through the directories to find `.gz` files.
+   * Decompresses JSON data into the `/json_data` folder.
+
+
+5. **Cleanup**: Automatically deletes the temporary extraction workspace.
 
 ---
 
 ## 📝 Important Notes
 
-* **Data Residency**: This script uses the **EU residency server** (`analytics.eu.amplitude.com`). If your project is hosted in the US, update the `url` variable to: `https://amplitude.com/api/2/export`.
-* **Security**: Add `.env` to your `.gitignore` file to ensure your API Secret Key is never uploaded to a public GitHub repository.
+* **Time Module**: Ensure `import time` is added to your script to support the `time.sleep(10)` function in your retry loop.
+* **Data Residency**: Currently set to the **EU Server**. For US-based projects, update the URL to `https://amplitude.com/api/2/export`.
+* **Git Best Practices**: If pushing to a public repo, ensure your `.gitignore` includes `.env`, `data/`, `json_data/`, and `logs/`.
+
+
