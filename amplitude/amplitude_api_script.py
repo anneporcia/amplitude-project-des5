@@ -87,7 +87,46 @@ import tempfile
 import gzip
 import shutil
 
+# def unzip():
+
+#     # Create a temporary directory for extraction
+#     temp_dir = tempfile.mkdtemp()
+
+#     # Create local output directory
+#     data_dir = "json_data"
+#     os.makedirs(data_dir, exist_ok=True)
+
+#     # unpack the .zip folder to the temp directory
+#     with ZipFile(filepath, 'r') as zip_ref:
+#         zip_ref.extractall(temp_dir)
+
+#     day_folder = next(f for f in os.listdir(temp_dir) if f.isdigit())
+#     day_path = os.path.join(temp_dir, day_folder)
+
+#     for root, _, files in os.walk(day_path):
+#         for file in files:
+#             if file.endswith('.gz'):
+#                 # Process each .gz file
+#                 print(file)
+
+#             gz_path = os.path.join(root, file)
+#             json_filename = file[:-3]  
+#             output_path = os.path.join(data_dir, json_filename)
+
+#             with gzip.open(gz_path, 'rb') as gz_file, open(output_path, 'wb') as out_file:
+#                 shutil.copyfileobj(gz_file, out_file)
+
+#     shutil.rmtree(temp_dir)
+
+# unzip()
+
 def unzip():
+    print("Starting unzip process...")
+    
+    # Check if the zip file actually exists and has size
+    if not os.path.exists(filepath) or os.path.getsize(filepath) == 0:
+        print(f"Error: Zip file {filepath} is missing or empty.")
+        return
 
     # Create a temporary directory for extraction
     temp_dir = tempfile.mkdtemp()
@@ -96,26 +135,38 @@ def unzip():
     data_dir = "json_data"
     os.makedirs(data_dir, exist_ok=True)
 
-    # unpack the .zip folder to the temp directory
-    with ZipFile(filepath, 'r') as zip_ref:
-        zip_ref.extractall(temp_dir)
+    try:
+        # Unpack the .zip folder to the temp directory
+        print(f"Extracting {filepath} to temp dir...")
+        with ZipFile(filepath, 'r') as zip_ref:
+            zip_ref.extractall(temp_dir)
 
-    day_folder = next(f for f in os.listdir(temp_dir) if f.isdigit())
-    day_path = os.path.join(temp_dir, day_folder)
+        # FIX: Walk through the temp_dir directly. 
+        # This works for both flat structures and nested folders.
+        files_found = 0
+        for root, _, files in os.walk(temp_dir):
+            for file in files:
+                if file.endswith('.gz'):
+                    files_found += 1
+                    print(f"Processing: {file}")
 
-    for root, _, files in os.walk(day_path):
-        for file in files:
-            if file.endswith('.gz'):
-                # Process each .gz file
-                print(file)
+                    gz_path = os.path.join(root, file)
+                    # Remove .gz extension for the output name
+                    json_filename = file[:-3]  
+                    output_path = os.path.join(data_dir, json_filename)
 
-    gz_path = os.path.join(root, file)
-    json_filename = file[:-3]  
-    output_path = os.path.join(data_dir, json_filename)
+                    with gzip.open(gz_path, 'rb') as gz_file, open(output_path, 'wb') as out_file:
+                        shutil.copyfileobj(gz_file, out_file)
+        
+        if files_found == 0:
+            print("No .gz files were found in the zip archive.")
+        else:
+            print(f"Successfully processed {files_found} files.")
 
-    with gzip.open(gz_path, 'rb') as gz_file, open(output_path, 'wb') as out_file:
-        shutil.copyfileobj(gz_file, out_file)
-
-    shutil.rmtree(temp_dir)
+    except Exception as e:
+        print(f"An error occurred during unzip: {e}")
+    finally:
+        # Clean up temp directory even if errors occur
+        shutil.rmtree(temp_dir)
 
 unzip()
