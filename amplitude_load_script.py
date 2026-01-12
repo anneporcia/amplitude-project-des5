@@ -37,7 +37,7 @@ if json_files:
             
             # creates full filepath for .upload_file function
             full_local_path = os.path.join(filepath, file)
-            key = os.path.join(keypath, file)
+            key = (f'{keypath}/{file}')
             
             try:
                 #uploads file from local directory to bucket
