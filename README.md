@@ -78,15 +78,15 @@ The script manages the following directory lifecycle:
 
 The script connects to the Amplitude EU Export API. It targets a 24-hour window from three days prior to the current date to ensure data completeness.
 
-### Part 2: Transformation (Unzip/Decompress)
+      **Unzip/Decompress**
+      
+      The downloaded file is a `.zip` containing several folders, which in turn contain multiple `.gz` files. The script:
+      
+      1. Extracts the main `.zip` to a temporary directory.
+      2. Walks through the subdirectories to find all `.gz` files.
+      3. Decompresses them into standard `.json` files in the `/json_data` folder.
 
-The downloaded file is a `.zip` containing several folders, which in turn contain multiple `.gz` files. The script:
-
-1. Extracts the main `.zip` to a temporary directory.
-2. Walks through the subdirectories to find all `.gz` files.
-3. Decompresses them into standard `.json` files in the `/json_data` folder.
-
-### Part 3: Loading (AWS S3)
+### Part 2: Loading (AWS S3)
 
 The script identifies all `.json` files in the `/json_data` folder and:
 
