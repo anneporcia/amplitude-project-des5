@@ -1,55 +1,63 @@
-# Amplitude-to-S3 Data Pipeline
+<div align="center">
+     
+# 🚀 Automated AMP Data Pipeline to S3
 
-A Python-based pipeline that automates the extraction of raw event data from the **Amplitude Export API**, transforms the nested compressed files into clean JSON, and loads them directly into an **AWS S3 Bucket**.
+<img src="https://img.shields.io/badge/Python-3.8%2B-blue?style=for-the-badge&logo=python" alt="Python">
+<img src="https://img.shields.io/badge/AWS-S3-orange?style=for-the-badge&logo=amazon-aws" alt="AWS">
+<img src="https://img.shields.io/badge/Status-Active-success?style=for-the-badge" alt="Status">
+
+<br />
+
+<p>
+  <b>A modular EtLT pipeline that fetches daily logs from the Amplitude API, extracts nested JSON data, and uploads it to AWS S3.</b>
+</p>
+
+</div>
 
 ---
 
-## 🚀 Pipeline Features
-
-* **Automated Extraction**: Fetches data from 3 days ago (Amplitude settled-data window) from the EU residency server.
-* **Robust Logging**: Detailed tracking of API status codes, file counts, and upload success/failure in the `/logs` directory.
-* **Recursive Decompression**: Unpacks the primary `.zip` and all nested `.gz` files automatically.
-* **S3 Integration**: Uploads processed JSON files to a specified AWS S3 prefix (`python-import/`).
-* **Auto-Cleanup**: Automatically deletes local JSON files after a successful S3 upload to save disk space.
+## 📋 Table of Contents
+- [Overview](#-overview)
+- [Workflow Architecture](#-workflow-architecture)
+- [Project Structure](#-project-structure)
+- [Prerequisites](#-prerequisites)
+- [Environment Configuration](#-environment-configuration)
+- [Running the Pipeline](#-running-the-pipeline)
 
 ---
 
-## 🛠 Setup and Usage
+## 📖 Overview
 
-### 1. Install Dependencies
-You will need the `requests`, `python-dotenv`, and `boto3` (AWS SDK) libraries:
-pip install requests python-dotenv boto3
+This project automates the daily data extraction process. It is designed to be run as a scheduled task (e.g., cron job). The `main.py` script orchestrates the following workflow:
 
+1.  **Extract:** Connects to Amplitude's export API and downloads logs for the previous day.
+2.  **Transform:** Unzips the downloaded archive, identifies internal GZIP files, and converts them to JSON.
+3.  **Load:** Uploads the processed JSON files to a specific AWS S3 bucket folder (`python-import`).
+4.  **Logging:** Generates separate log files for the API call, unzipping, and loading processes for full auditability.
 
-### 2. Configure AWS CLI
+---
 
-The script uses the `default` profile from your AWS credentials file. Ensure you have run:
+## ⚙️ Workflow Architecture
 
-```
-aws configure
-
-```
-
-### 3. Environment Variables
-
-Create a `.env` file in the root directory and provide your credentials:
-
-```env
-# Amplitude Credentials
-AMP_API_KEY=your_amplitude_api_key
-AMP_SECRET_KEY=your_amplitude_secret_key
-
-# AWS Credentials
-AWS_BUCKET_NAME=your_s3_bucket_name
-
-```
-
-### 4. Run the Pipeline
-
-Execute the script to start the full flow:
-
-```bash
-python your_script_name.py
+```mermaid
+graph TD;
+    Start([main.py]) -->|Initialize| Env[Load .env Variables];
+    Env --> API[Call Amplitude API];
+    API -- Success --> Download[(Download .zip)];
+    Download --> Unzip[Extract .gz -> .json];
+    Unzip --> Upload[Upload to AWS S3];
+    Upload --> Cleanup[Delete Local Files];
+    Cleanup --> End([Finish]);
+    
+    subgraph Logging
+    Log1[api_call Logs]
+    Log2[unzip Logs]
+    Log3[load Logs]
+    end
+    
+    API -.-> Log1
+    Unzip -.-> Log2
+    Upload -.-> Log3
 
 ```
 
@@ -57,49 +65,71 @@ python your_script_name.py
 
 ## 📂 Project Structure
 
-The script manages the following directory lifecycle:
+Ensure your directory is organized as follows for the imports in `main.py` to work correctly:
 
 ```text
-.
-├── .env                # Private credentials
-├── extract_script.py   # The full ETL script
-├── load_script.py   # The full ETL script
-├── logs/               # Execution logs for auditing
-├── data/               # Raw .zip archives from Amplitude
-└── json_data/          # Temporary folder for extracted JSONs (cleaned after upload)
+├── modules/
+│   ├── __init__.py       # (Optional, ensures directory is treated as a package)
+│   ├── api_call.py       # API connection logic
+│   ├── load.py           # S3 upload logic
+│   ├── logger.py         # Logging configuration
+│   └── unzip_files.py    # File extraction logic
+├── main.py               # Orchestrator script
+├── .env                  # Secrets (Not committed to Git)
+└── requirements.txt      # Dependencies
 
 ```
 
 ---
 
-## ⚙️ How It Works
+## 🛠 Prerequisites
 
-### Part 1: Extraction (API)
+Ensure you have Python installed. Install the required dependencies using pip:
 
-The script connects to the Amplitude EU Export API. It targets a 24-hour window from three days prior to the current date to ensure data completeness.
+```bash
+pip install requests boto3 python-dotenv
 
-      **Unzip/Decompress**
-      
-      The downloaded file is a `.zip` containing several folders, which in turn contain multiple `.gz` files. The script:
-      
-      1. Extracts the main `.zip` to a temporary directory.
-      2. Walks through the subdirectories to find all `.gz` files.
-      3. Decompresses them into standard `.json` files in the `/json_data` folder.
-
-### Part 2: Loading (AWS S3)
-
-The script identifies all `.json` files in the `/json_data` folder and:
-
-1. Uploads them to `s3://[your-bucket]/python-import/[filename].json`.
-2. Upon a successful upload, the local copy of the JSON file is **deleted** to maintain a clean environment.
+```
 
 ---
 
-## 📝 Important Notes
+## 🔐 Environment Configuration
 
-* **Error Handling**: If an upload fails, the local file is preserved so you don't lose data.
-* **Data Residency**: Currently configured for **Amplitude EU**. For US projects, update the URL to `https://amplitude.com/api/2/export`.
-* **Security**: Ensure `logs/`, `data/`, `json_data/`, and `.env` are added to your `.gitignore` to prevent sensitive data from reaching GitHub.
+Create a `.env` file in the root directory. The application requires **Amplitude** keys (retrieved inside the module) and **AWS** keys (retrieved in `main.py`).
+
+```ini
+# .env file
+
+# Amplitude API Credentials
+AMP_API_KEY=your_amplitude_api_key
+AMP_SECRET_KEY=your_amplitude_secret_key
+
+# AWS S3 Credentials
+AWS_ACCESS_KEY=your_aws_access_key
+AWS_SECRET_KEY=your_aws_secret_key
+BUCKET_NAME=your_s3_bucket_name
+
+```
 
 ---
 
+## 🚀 Running the Pipeline
+
+To execute the full ETL process, simply run the main script from your terminal:
+
+```bash
+python main.py
+
+```
+
+### Outputs
+
+* **Console:** Real-time status updates and error messages.
+* **Logs:** A folder named `api_call_logs`, `unzip_logs`, etc., containing detailed logs of the execution.
+* **S3:** JSON files will appear in your bucket under the `python-import/` prefix.
+
+---
+
+<div align="center">
+<sub>Built with 💖 using Python</sub>
+</div>
