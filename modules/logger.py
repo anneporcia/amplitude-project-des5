@@ -11,7 +11,7 @@ def logging_function(prefix, filename):
     '''
     log_dir = f'{prefix}_logs'
     
-    os.makedirs(dir, exist_ok=True)
+    os.makedirs(log_dir, exist_ok=True)
 
     #created the log file using the file name
     log_filename = f"{log_dir}/{filename}.log"

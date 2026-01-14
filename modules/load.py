@@ -1,10 +1,11 @@
+# import necessary packages for uplaoding to s3 and logging
 import boto3
 import os
 from dotenv import load_dotenv
 import logging
 
-
-def upload_to_s3(output_dir, access_key, secret_access_key, bucket, logger):
+# defining load to s3 function
+def upload_to_s3(output_dir, access_key, secret_access_key, bucket, bucket_folder, logger):
 
     # Create an S3 Client using AWS Credentials
     s3_client = boto3.client(
@@ -13,11 +14,10 @@ def upload_to_s3(output_dir, access_key, secret_access_key, bucket, logger):
         aws_secret_access_key=secret_access_key
     )
 
+    # alternative for when keys/credentials aren't working
     # session = boto3.Session(profile_name = 'default')
-
     # s3 = session.client('s3')
 
-    bucketpath = 'python-import'
 
     # Upload file (Key) to S3 Bucket
 
@@ -33,7 +33,7 @@ def upload_to_s3(output_dir, access_key, secret_access_key, bucket, logger):
                 
                 # creates full filepath for .upload_file function
                 full_local_path = os.path.join(output_dir, file)
-                key = (f'{bucketpath}/{file}')
+                key = (f'{bucket_folder}/{file}')
                 
                 try:
                     #uploads file from local directory to bucket
