@@ -8,28 +8,14 @@ import logging
 
 # variables for the filenames and directories
 dir = 'data'
-log_dir = 'logs'
 filename = datetime.now().strftime('%Y-%m-%d %H-%M-%S')
 filepath = f'{dir}/{filename}.zip'
-log_filename = f"{log_dir}/amplitude_extract_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
 
-if os.path.exists(log_dir):
-    pass
-else:
-    os.mkdir(log_dir)
-
-logging.basicConfig(
-    level=logging.INFO, 
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    filename=log_filename
-)
-
-logger = logging.getLogger()
-
-yesterday = datetime.now() - timedelta(days=3)
-
-def api_call(url):
+def api_call(url, dir, filename, filepath, logger):
     load_dotenv()
+
+    yesterday = datetime.now() - timedelta(days=1)
+
     dates = {
         'start': yesterday.strftime('%Y%m%dT00'),
         'end': yesterday.strftime('%Y%m%dT23')
