@@ -6,7 +6,7 @@ load_dotenv()
 
 access_key = os.getenv('AWS_ACCESS_KEY')
 secret_access_key = os.getenv('AWS_SECRET_KEY')
-bucket = os.getenv('AWS_BUCKET_NAME')
+bucket = os.getenv('BUCKET_NAME')
 
 def load_function(data_dir, access_key, secret_access_key, bucket):
     '''
