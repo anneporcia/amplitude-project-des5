@@ -34,4 +34,4 @@ api_call(url, folder, filename, input_dir, api_logger)
 
 unzip(input_dir, output_dir, unzip_logger)
 
-upload_to_s3(output_dir, access_key, secret_access_key, bucket, bucket_folder)
+upload_to_s3(output_dir, access_key, secret_access_key, bucket, bucket_folder, load_logger)
