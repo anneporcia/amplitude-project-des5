@@ -115,7 +115,7 @@ BUCKET_NAME=your_s3_bucket_name
 
 ## 🚀 Running the Pipeline
 
-To execute the full ETL process, simply run the main script from your terminal:
+To execute the full process, simply run the main script from your terminal:
 
 ```bash
 python main.py
