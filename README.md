@@ -2,7 +2,7 @@
      
 # 🚀 Automated AMP Data Pipeline to S3
 
-<img src="https://img.shields.io/badge/Python-3.8%2B-blue?style=for-the-badge&logo=python" alt="Python">
+<img src="https://img.shields.io/badge/Python-3.12%2B-blue?style=for-the-badge&logo=python" alt="Python">
 <img src="https://img.shields.io/badge/AWS-S3-orange?style=for-the-badge&logo=amazon-aws" alt="AWS">
 <img src="https://img.shields.io/badge/Status-Active-success?style=for-the-badge" alt="Status">
 
